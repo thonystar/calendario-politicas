@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Calendario de Políticas SMS/IVR</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css">
+    <style>
+        #calendar {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 10px;
+            border: 1px solid #ccc;
+            height: 600px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Calendario de Políticas Ejecutadas</h2>
+
+    <form id="form-programar" style="margin-bottom: 20px;">
+        <label>Tipo:</label>
+        <select name="tipo">
+            <option value="SMSTenor">SMSTenor</option>
+            <option value="SMSRefuerzo">SMSRefuerzo</option>
+        </select><br>
+        <label>Fecha inicio:</label>
+        <input type="date" name="fecha_inicio"><br>
+        <label>Hora inicio:</label>
+        <input type="time" name="hora_inicio"><br>
+        <label>Fecha fin:</label>
+        <input type="date" name="fecha_fin"><br>
+        <label>Hora fin:</label>
+        <input type="time" name="hora_fin"><br>
+        <button type="submit">Guardar programación</button>
+    </form>
+
+    <div id="calendar"></div>
+
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/main.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.9/index.global.min.js"></script>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        let calendarEl = document.getElementById('calendar');
+        let calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            events: '/api/eventos',
+            eventClick: function (info) {
+                const props = info.event.extendedProps;
+                if (props.tipo) {
+                    alert(`Política: ${props.tipo}\nDe: Día ${props.d1} ${props.h1} → Día ${props.d2} ${props.h2}`);
+                }
+            }
+        });
+        calendar.render();
+
+        // Mueve esto AQUÍ dentro del DOMContentLoaded
+        document.getElementById("form-programar").addEventListener("submit", async function (e) {
+            e.preventDefault();
+            const form = new FormData(this);
+            const data = Object.fromEntries(form.entries());
+
+            console.log("Datos enviados:", data); // para depuración
+
+            await fetch('/api/programar', {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+
+            alert("Programación guardada correctamente");
+            location.reload();
+        });
+    });
+    </script>
+</body>
+</html>
